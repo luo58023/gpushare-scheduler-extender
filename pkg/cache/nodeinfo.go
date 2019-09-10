@@ -3,6 +3,7 @@ package cache
 import (
 	"fmt"
 	"log"
+	"net/rpc"
 	"sync"
 
 	"github.com/luo58023/gpushare-scheduler-extender/pkg/utils"
@@ -258,9 +259,29 @@ func (n *NodeInfo) getAvailableGPUs() (availableGPUs map[int]uint) {
 	for id, totalGPUMem := range allGPUs {
 		if usedGPUMem, found := usedGPUs[id]; found {
 			availableGPUs[id] = totalGPUMem - usedGPUMem
+			//如果实际剩余比可用要少，则吧可用值修改为实际剩余
+			if availableGPUs[id] > uint(n.getFreeGPUs(uint(id))) {
+				availableGPUs[id] = uint(n.getFreeGPUs(uint(id)))
+			}
 		}
 	}
 	return availableGPUs
+}
+
+//通过rpc协议获取当前节点的gpu实际空闲资源
+func (n *NodeInfo) getFreeGPUs(id uint) uint64 {
+	client, err := rpc.Dial("tcp", n.name+":8666")
+	if err != nil {
+		log.Print(err)
+		return 0
+	}
+	var out uint64
+	err = client.Call("GpuStatus.GetFreeMemoryById", id, &out)
+	if err != nil {
+		log.Print(err)
+		return 0
+	}
+	return out / 1024
 }
 
 // device index: gpu memory
