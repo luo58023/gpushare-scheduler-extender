@@ -1,7 +1,7 @@
 package scheduler
 
 import (
-	"github.com/AliyunContainerService/gpushare-scheduler-extender/pkg/cache"
+	"github.com/luo58023/gpushare-scheduler-extender/pkg/cache"
 )
 
 func NewGPUShareInspect(c *cache.SchedulerCache) *Inspect {
