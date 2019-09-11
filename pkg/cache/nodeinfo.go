@@ -275,6 +275,7 @@ func (n *NodeInfo) getFreeGPUs(id uint) uint64 {
 		log.Print(err)
 		return 0
 	}
+	defer client.Close()
 	var out uint64
 	err = client.Call("GpuStatus.GetFreeMemoryById", id, &out)
 	if err != nil {
